@@ -364,15 +364,35 @@
             <div class="complexity-stat-card critical">
                 <div class="stat-icon">🚨</div>
                 <div class="stat-content">
-                    <span class="stat-number">{{ modules_needing_critical_attention | length | default('0') }}</span>
-                    <span class="stat-label">Critical Attention</span>
+                    <span class="stat-number">
+                        {% set critical_count = 0 %}
+                        {% if high_complexity_functions %}
+                            {% for f in high_complexity_functions %}
+                                {% if f.complexity >= 20 %}
+                                    {% set critical_count = critical_count + 1 %}
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                        {{ critical_count }}
+                    </span>
+                    <span class="stat-label">Critical Functions</span>
                     <span class="stat-sublabel">O(n²) or worse</span>
                 </div>
             </div>
             <div class="complexity-stat-card warning">
                 <div class="stat-icon">⚠️</div>
                 <div class="stat-content">
-                    <span class="stat-number">{{ modules_needing_attention | length | default('0') }}</span>
+                    <span class="stat-number">
+                        {% set warning_count = 0 %}
+                        {% if high_complexity_functions %}
+                            {% for f in high_complexity_functions %}
+                                {% if f.complexity >= 10 and f.complexity < 20 %}
+                                    {% set warning_count = warning_count + 1 %}
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                        {{ warning_count }}
+                    </span>
                     <span class="stat-label">Needs Attention</span>
                     <span class="stat-sublabel">O(n log n) complexity</span>
                 </div>
@@ -380,15 +400,25 @@
             <div class="complexity-stat-card good">
                 <div class="stat-icon">✅</div>
                 <div class="stat-content">
-                    <span class="stat-number">{{ optimized_modules | length | default('0') }}</span>
-                    <span class="stat-label">Optimized</span>
+                    <span class="stat-number">
+                        {% set optimized_count = 0 %}
+                        {% if complexity_data and complexity_data.get('files') %}
+                            {% for file_data in complexity_data.get('files', []) %}
+                                {% if file_data.get('avg_complexity', 0) < 5 %}
+                                    {% set optimized_count = optimized_count + 1 %}
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                        {{ optimized_count }}
+                    </span>
+                    <span class="stat-label">Optimized Modules</span>
                     <span class="stat-sublabel">O(1) or O(log n)</span>
                 </div>
             </div>
             <div class="complexity-stat-card info">
                 <div class="stat-icon">📈</div>
                 <div class="stat-content">
-                    <span class="stat-number">{{ total_functions | default('N/A') }}</span>
+                    <span class="stat-number">{{ complexity_analysis.high_complexity_functions | default(complexity_data.get('summary', {}).get('total_functions', 'N/A') if complexity_data else 'N/A') }}</span>
                     <span class="stat-label">Total Functions</span>
                     <span class="stat-sublabel">Analyzed</span>
                 </div>
@@ -404,17 +434,17 @@
     
     <div class="critical-functions-grid">
         {% if high_complexity_functions %}
-            {% for f in high_complexity_functions | sort(attribute='complexity', reverse=true) %}
-                {% if f.complexity >= 15 %}
+            {% for f in high_complexity_functions %}
+                {% if f.get('complexity', 0) >= 15 %}
                 <div class="critical-function-card">
                     <div class="function-header">
                         <div class="function-icon">🔥</div>
                         <div class="function-info">
-                            <h3>{{ f.name }}()</h3>
-                            <p class="function-location">{{ f.module }}</p>
+                            <h3>{{ f.get('name', 'Unknown') }}()</h3>
+                            <p class="function-location">{{ f.get('module', f.get('file', 'Unknown')) }}</p>
                         </div>
                         <div class="complexity-badge critical-badge">
-                            Complexity: {{ f.complexity }}
+                            Complexity: {{ f.get('complexity', 0) }}
                         </div>
                     </div>
                     
@@ -422,10 +452,10 @@
                         <div class="big-o-section">
                             <h4>⏱️ Time Complexity</h4>
                             <div class="big-o-estimate">
-                                {% if f.complexity >= 25 %}
+                                {% if f.get('complexity', 0) >= 25 %}
                                     <span class="big-o-notation critical">O(n³) or O(2ⁿ)</span>
                                     <span class="big-o-description">Exponential/Cubic - Critical Performance Issue</span>
-                                {% elif f.complexity >= 20 %}
+                                {% elif f.get('complexity', 0) >= 20 %}
                                     <span class="big-o-notation warning">O(n²)</span>
                                     <span class="big-o-description">Quadratic - Scales poorly with input size</span>
                                 {% else %}
@@ -438,10 +468,10 @@
                         <div class="big-o-section">
                             <h4>💾 Space Complexity</h4>
                             <div class="big-o-estimate">
-                                {% if f.complexity >= 25 %}
+                                {% if f.get('complexity', 0) >= 25 %}
                                     <span class="big-o-notation critical">O(n²)</span>
                                     <span class="big-o-description">Quadratic space usage</span>
-                                {% elif f.complexity >= 20 %}
+                                {% elif f.get('complexity', 0) >= 20 %}
                                     <span class="big-o-notation warning">O(n)</span>
                                     <span class="big-o-description">Linear space growth</span>
                                 {% else %}
@@ -455,12 +485,12 @@
                     <div class="optimization-suggestions">
                         <h4>🚀 Optimization Strategies</h4>
                         <ul class="optimization-list">
-                            {% if f.complexity >= 25 %}
+                            {% if f.get('complexity', 0) >= 25 %}
                                 <li>Consider dynamic programming or memoization</li>
                                 <li>Implement iterative solutions instead of recursive</li>
                                 <li>Use efficient data structures (hash maps, trees)</li>
                                 <li>Break down into smaller, focused functions</li>
-                            {% elif f.complexity >= 20 %}
+                            {% elif f.get('complexity', 0) >= 20 %}
                                 <li>Replace nested loops with more efficient algorithms</li>
                                 <li>Use binary search for sorted data</li>
                                 <li>Implement caching for repeated computations</li>
@@ -474,8 +504,8 @@
                     
                     <div class="function-actions">
                         <span class="priority-badge critical">🔥 Critical Priority</span>
-                        {% if f.line_number %}
-                            <span class="line-info">Line {{ f.line_number }}</span>
+                        {% if f.get('line_number') %}
+                            <span class="line-info">Line {{ f.get('line_number') }}</span>
                         {% endif %}
                     </div>
                 </div>
@@ -505,15 +535,15 @@
             </div>
             <div class="functions-grid">
                 {% if high_complexity_functions %}
-                    {% for f in high_complexity_functions | sort(attribute='complexity', reverse=true) %}
-                        {% if f.complexity >= 20 %}
+                    {% for f in high_complexity_functions %}
+                        {% if f.get('complexity', 0) >= 20 %}
                         <div class="function-complexity-card critical">
-                            <div class="function-name">{{ f.name }}()</div>
-                            <div class="function-module">{{ f.module }}</div>
+                            <div class="function-name">{{ f.get('name', 'Unknown') }}()</div>
+                            <div class="function-module">{{ f.get('module', f.get('file', 'Unknown')) }}</div>
                             <div class="big-o-badge critical">
-                                {% if f.complexity >= 25 %}O(n³) or O(2ⁿ){% else %}O(n²){% endif %}
+                                {% if f.get('complexity', 0) >= 25 %}O(n³) or O(2ⁿ){% else %}O(n²){% endif %}
                             </div>
-                            <div class="complexity-score">Complexity: {{ f.complexity }}</div>
+                            <div class="complexity-score">Complexity: {{ f.get('complexity', 0) }}</div>
                             <div class="optimization-urgency critical">🔥 Immediate attention needed</div>
                         </div>
                         {% endif %}
@@ -532,13 +562,13 @@
             </div>
             <div class="functions-grid">
                 {% if high_complexity_functions %}
-                    {% for f in high_complexity_functions | sort(attribute='complexity', reverse=true) %}
-                        {% if f.complexity >= 10 and f.complexity < 20 %}
+                    {% for f in high_complexity_functions %}
+                        {% if f.get('complexity', 0) >= 10 and f.get('complexity', 0) < 20 %}
                         <div class="function-complexity-card warning">
-                            <div class="function-name">{{ f.name }}()</div>
-                            <div class="function-module">{{ f.module }}</div>
+                            <div class="function-name">{{ f.get('name', 'Unknown') }}()</div>
+                            <div class="function-module">{{ f.get('module', f.get('file', 'Unknown')) }}</div>
                             <div class="big-o-badge warning">O(n log n)</div>
-                            <div class="complexity-score">Complexity: {{ f.complexity }}</div>
+                            <div class="complexity-score">Complexity: {{ f.get('complexity', 0) }}</div>
                             <div class="optimization-urgency warning">⚠️ Monitor for large datasets</div>
                         </div>
                         {% endif %}
@@ -556,19 +586,17 @@
                 <p>Efficient functions with linear scaling</p>
             </div>
             <div class="functions-grid">
-                {% if modules %}
-                    {% for m in modules %}
-                        {% for f in m.functions | default([]) %}
-                            {% if f.complexity and f.complexity >= 5 and f.complexity < 10 %}
-                            <div class="function-complexity-card good">
-                                <div class="function-name">{{ f.name }}()</div>
-                                <div class="function-module">{{ m.name }}</div>
-                                <div class="big-o-badge good">O(n)</div>
-                                <div class="complexity-score">Complexity: {{ f.complexity }}</div>
-                                <div class="optimization-urgency good">✅ Well optimized</div>
-                            </div>
-                            {% endif %}
-                        {% endfor %}
+                {% if high_complexity_functions %}
+                    {% for f in high_complexity_functions %}
+                        {% if f.get('complexity', 0) >= 5 and f.get('complexity', 0) < 10 %}
+                        <div class="function-complexity-card good">
+                            <div class="function-name">{{ f.get('name', 'Unknown') }}()</div>
+                            <div class="function-module">{{ f.get('module', f.get('file', 'Unknown')) }}</div>
+                            <div class="big-o-badge good">O(n)</div>
+                            <div class="complexity-score">Complexity: {{ f.get('complexity', 0) }}</div>
+                            <div class="optimization-urgency good">✅ Well optimized</div>
+                        </div>
+                        {% endif %}
                     {% endfor %}
                 {% else %}
                     <div class="no-functions">📊 Function analysis data not available</div>
@@ -583,15 +611,15 @@
                 <p>Highly optimized functions with excellent performance</p>
             </div>
             <div class="functions-grid">
-                {% if modules %}
-                    {% for m in modules %}
-                        {% for f in m.functions | default([]) %}
-                            {% if f.complexity and f.complexity < 5 %}
+                {% if complexity_data and complexity_data.get('files') %}
+                    {% for file_data in complexity_data.get('files', []) %}
+                        {% for func in file_data.get('functions', []) %}
+                            {% if func.get('complexity', 0) < 5 %}
                             <div class="function-complexity-card excellent">
-                                <div class="function-name">{{ f.name }}()</div>
-                                <div class="function-module">{{ m.name }}</div>
+                                <div class="function-name">{{ func.get('name', 'Unknown') }}()</div>
+                                <div class="function-module">{{ file_data.get('file', 'Unknown') }}</div>
                                 <div class="big-o-badge excellent">O(1) or O(log n)</div>
-                                <div class="complexity-score">Complexity: {{ f.complexity }}</div>
+                                <div class="complexity-score">Complexity: {{ func.get('complexity', 0) }}</div>
                                 <div class="optimization-urgency excellent">🚀 Excellent performance</div>
                             </div>
                             {% endif %}
@@ -695,24 +723,31 @@
     
     <div class="modules-attention-grid">
         {% if modules %}
-            {% set sorted_modules = modules | sort(attribute='complexity', reverse=true) %}
-            {% for m in sorted_modules %}
-            <div class="module-attention-card {% if m.complexity >= 20 %}critical{% elif m.complexity >= 15 %}high{% elif m.complexity >= 10 %}medium{% else %}low{% endif %}">
+            {% for m in modules %}
+                {% set module_complexity = 0 %}
+                {% if complexity_data and complexity_data.get('files') %}
+                    {% for file_data in complexity_data.get('files', []) %}
+                        {% if file_data.get('file') == m.get('path') %}
+                            {% set module_complexity = file_data.get('avg_complexity', 0) %}
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            <div class="module-attention-card {% if module_complexity >= 20 %}critical{% elif module_complexity >= 15 %}high{% elif module_complexity >= 10 %}medium{% else %}low{% endif %}">
                 <div class="module-header">
                     <div class="attention-indicator">
-                        {% if m.complexity >= 20 %}
+                        {% if module_complexity >= 20 %}
                             <span class="priority-badge critical">🚨 Critical</span>
-                        {% elif m.complexity >= 15 %}
+                        {% elif module_complexity >= 15 %}
                             <span class="priority-badge high">⚠️ High Priority</span>
-                        {% elif m.complexity >= 10 %}
+                        {% elif module_complexity >= 10 %}
                             <span class="priority-badge medium">⚡ Medium Priority</span>
                         {% else %}
                             <span class="priority-badge low">✅ Low Priority</span>
                         {% endif %}
                     </div>
-                    <h3>{{ m.name }}</h3>
+                    <h3>{{ m.get('name', 'Unknown Module') }}</h3>
                     <div class="complexity-score-badge">
-                        Complexity: {{ m.complexity | default(0) }}
+                        Complexity: {{ module_complexity | round(2) }}
                     </div>
                 </div>
                 
@@ -720,11 +755,11 @@
                     <div class="big-o-estimates">
                         <div class="time-complexity-estimate">
                             <span class="complexity-label">⏱️ Time:</span>
-                            {% if m.complexity >= 20 %}
+                            {% if module_complexity >= 20 %}
                                 <span class="big-o-value critical">O(n²) - O(n³)</span>
-                            {% elif m.complexity >= 15 %}
+                            {% elif module_complexity >= 15 %}
                                 <span class="big-o-value high">O(n log n)</span>
-                            {% elif m.complexity >= 10 %}
+                            {% elif module_complexity >= 10 %}
                                 <span class="big-o-value medium">O(n)</span>
                             {% else %}
                                 <span class="big-o-value good">O(1) - O(log n)</span>
@@ -732,11 +767,11 @@
                         </div>
                         <div class="space-complexity-estimate">
                             <span class="complexity-label">💾 Space:</span>
-                            {% if m.complexity >= 20 %}
+                            {% if module_complexity >= 20 %}
                                 <span class="big-o-value critical">O(n) - O(n²)</span>
-                            {% elif m.complexity >= 15 %}
+                            {% elif module_complexity >= 15 %}
                                 <span class="big-o-value high">O(n)</span>
-                            {% elif m.complexity >= 10 %}
+                            {% elif module_complexity >= 10 %}
                                 <span class="big-o-value medium">O(log n)</span>
                             {% else %}
                                 <span class="big-o-value good">O(1)</span>
@@ -748,28 +783,28 @@
                 <div class="module-stats">
                     <div class="stat-item">
                         <span class="stat-label">Functions:</span>
-                        <span class="stat-value">{{ m.functions | length | default(0) }}</span>
+                        <span class="stat-value">{{ m.get('functions', []) | length }}</span>
                     </div>
                     <div class="stat-item">
                         <span class="stat-label">Classes:</span>
-                        <span class="stat-value">{{ m.classes | length | default(0) }}</span>
+                        <span class="stat-value">{{ m.get('classes', []) | length }}</span>
                     </div>
                     <div class="stat-item">
                         <span class="stat-label">Lines:</span>
-                        <span class="stat-value">{{ m.lines_of_code | default(0) }}</span>
+                        <span class="stat-value">{{ m.get('lines_of_code', 0) }}</span>
                     </div>
                 </div>
                 
                 <div class="optimization-recommendations">
-                    {% if m.complexity >= 20 %}
+                    {% if module_complexity >= 20 %}
                         <div class="recommendation">🔥 Immediate refactoring required</div>
                         <div class="recommendation">📊 Consider algorithm redesign</div>
                         <div class="recommendation">🧪 Add comprehensive testing before changes</div>
-                    {% elif m.complexity >= 15 %}
+                    {% elif module_complexity >= 15 %}
                         <div class="recommendation">⚠️ Schedule refactoring soon</div>
                         <div class="recommendation">🔍 Profile performance bottlenecks</div>
                         <div class="recommendation">📈 Monitor with larger datasets</div>
-                    {% elif m.complexity >= 10 %}
+                    {% elif module_complexity >= 10 %}
                         <div class="recommendation">🔧 Consider minor optimizations</div>
                         <div class="recommendation">📚 Add documentation for complex parts</div>
                     {% else %}
@@ -778,9 +813,9 @@
                     {% endif %}
                 </div>
                 
-                {% if m.path %}
+                {% if m.get('path') %}
                 <div class="module-path">
-                    <code>{{ m.path }}</code>
+                    <code>{{ m.get('path') }}</code>
                 </div>
                 {% endif %}
             </div>
