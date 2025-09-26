@@ -1,0 +1,75 @@
+# AI Service Configuration Example
+# Copy this to your main config file and adjust as needed
+
+ai:
+  enabled: true
+
+llm:
+  # Enable LLM-powered analysis features
+  enabled: true
+  
+  # OpenAI API configuration
+  openai_api_key: "your-openai-api-key-here"  # Or set OPENAI_API_KEY environment variable
+  
+  # Model settings
+  default_model: "gpt-3.5-turbo"  # Options: gpt-3.5-turbo, gpt-4, gpt-4-turbo-preview
+  
+  # Rate limiting (to manage costs and API limits)
+  max_requests_per_minute: 60
+  max_tokens_per_request: 4000
+  
+  # Analysis settings
+  temperature: 0.3  # Lower = more consistent, Higher = more creative
+  timeout: 30  # Request timeout in seconds
+  
+  # Feature toggles
+  features:
+    code_quality_analysis: true
+    architecture_analysis: true
+    documentation_suggestions: true
+    performance_analysis: true
+    testing_strategy: true
+    batch_processing: true
+    async_processing: true
+
+# Cache settings for AI responses
+cache:
+  enabled: true
+  llm_response_ttl: 3600  # Cache LLM responses for 1 hour
+
+# Framework detection settings
+framework_detection:
+  enabled: true
+  patterns:
+    - "tensorflow"
+    - "pytorch" 
+    - "scikit-learn"
+    - "pandas"
+    - "numpy"
+    - "flask"
+    - "django"
+    - "fastapi"
+    - "react"
+    - "vue"
+    - "angular"
+
+# Model analysis settings  
+model_analysis:
+  enabled: true
+  file_extensions:
+    - ".py"
+    - ".js" 
+    - ".ts"
+    - ".java"
+    - ".cpp"
+    - ".h"
+
+# Pipeline analysis settings
+pipeline_analysis:
+  enabled: true
+  workflow_patterns:
+    - "train"
+    - "predict" 
+    - "inference"
+    - "preprocess"
+    - "transform"

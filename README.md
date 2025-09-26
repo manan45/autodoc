@@ -12,6 +12,7 @@ An intelligent system that automatically analyzes your codebase and generates co
 - **🤖 AI/ML Pipeline Detection**: Specialized analysis for machine learning components
 - **📚 Comprehensive Documentation**: Generates multiple documentation sections automatically
 - **📊 Visual Diagrams**: Architecture diagrams and data flow visualizations
+- **🗄️ Supabase Integration**: Complete data logging, monitoring, and debug interface
 - **🔄 CI/CD Integration**: GitHub Actions workflow for automated documentation updates
 - **🎨 Beautiful Output**: MkDocs Material theme with modern UI
 - **⚡ Fast & Efficient**: Optimized for large codebases
@@ -80,6 +81,8 @@ auto_doc_generator/
 │   ├── generators/
 │   │   ├── markdown_generator.py # Documentation generation
 │   │   └── diagram_generator.py  # Visual diagram creation
+│   ├── supabase_integration.py  # Supabase logging & storage
+│   ├── debug_interface.py       # Web debug interface
 │   └── main.py                   # Main entry point
 ├── config/
 │   ├── doc_config.yaml          # Main configuration
@@ -92,6 +95,9 @@ auto_doc_generator/
 ├── .github/workflows/
 │   └── auto-doc.yml             # GitHub Actions workflow
 ├── docs/                        # Generated documentation output
+├── setup_supabase.py            # Supabase setup script
+├── supabase_setup.sql           # Complete database setup (handles all scenarios)
+├── start_debug_server.py        # Debug interface launcher
 ├── Dockerfile                   # Container definition
 ├── requirements.txt             # Python dependencies
 └── README.md                    # This file
@@ -142,6 +148,113 @@ code_patterns:
     - "def.*train"
     - "def.*predict"
 ```
+
+## 🗄️ Supabase Integration
+
+The system includes comprehensive Supabase integration for logging, data storage, and monitoring of the documentation generation process.
+
+### Features
+
+- **📊 Analysis Tracking**: Complete analysis results storage
+- **🤖 LLM Logging**: All AI/LLM interactions with metrics
+- **🎯 Vector Embeddings**: Code embeddings with pgvector for fast semantic search
+- **🔬 Quality Assessments**: Module quality metrics and insights
+- **📚 Documentation Tracking**: Generation metadata and results
+- **🔍 Debug Interface**: Web-based monitoring dashboard
+
+### Quick Setup
+
+1. **Create Supabase Project**:
+   - Go to [supabase.com](https://supabase.com) and create a new project
+   - Note your project URL and anon key
+
+2. **Set Environment Variables**:
+   ```bash
+   export SUPABASE_URL='https://your-project-ref.supabase.co'
+   export SUPABASE_ANON_KEY='your-supabase-anon-key'
+   ```
+
+3. **Run Setup Script**:
+   ```bash
+   python setup_supabase.py
+   ```
+
+4. **Execute Database Schema**:
+   - Copy contents of `supabase_setup.sql` and execute in Supabase SQL Editor
+   - This single file handles both new setups and existing installations automatically
+
+### Database Tables
+
+The system creates 6 tables for comprehensive data storage:
+
+| Table | Purpose |
+|-------|---------|
+| `analysis_steps` | Track each step of the analysis process |
+| `llm_interactions` | Log all AI/LLM requests and responses |
+| `vector_embeddings` | Store code embeddings using pgvector for fast semantic search |
+| `quality_assessments` | Module quality metrics and LLM insights |
+| `complete_analysis_results` | Full analysis data (code, AI, quality) |
+| `documentation_generations` | Documentation generation tracking |
+
+### Debug Interface
+
+Monitor your data with the web-based debug interface:
+
+```bash
+# Start debug server
+python start_debug_server.py
+
+# Visit dashboard
+open http://localhost:5001
+```
+
+**Available Endpoints**:
+- `/api/database-stats` - Database statistics
+- `/api/llm-interactions` - Recent AI interactions
+- `/api/analysis-steps` - Analysis step history
+- `/api/complete-analysis-results` - Full analysis data
+- `/api/documentation-generations` - Documentation tracking
+- `/api/vector-embeddings/search` - Semantic code search
+
+### Configuration
+
+Add Supabase configuration to your `documentor.yaml`:
+
+```yaml
+supabase:
+  enabled: true
+  url: ${SUPABASE_URL}
+  key: ${SUPABASE_ANON_KEY}
+
+# Optional: Customize logging behavior
+logging:
+  supabase:
+    log_analysis_steps: true
+    log_llm_interactions: true
+    log_quality_assessments: true
+    log_complete_results: true
+    log_documentation: true
+```
+
+### Usage with Analysis
+
+The system automatically logs data when Supabase is configured:
+
+```bash
+# Run analysis with Supabase logging
+python -m auto_doc_generator.main --analyze --generate
+
+# Start debug interface to monitor
+python start_debug_server.py
+```
+
+### Data Retention
+
+- **Development**: Data stored indefinitely
+- **Production**: Consider implementing data retention policies
+- **Privacy**: All data stored in your Supabase instance
+
+For detailed setup instructions, see [SUPABASE_INTEGRATION.md](SUPABASE_INTEGRATION.md).
 
 ## 🔄 CI/CD Integration
 

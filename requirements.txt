@@ -38,10 +38,16 @@ rich==13.7.0
 
 # AI/OpenAI integration for AI-powered diagram generation
 openai==1.51.0
-httpx==0.25.2
+httpx>=0.25.2,<0.28.0
 python-dotenv==1.0.0
 
-# Optional: Vector embeddings for semantic search and code memory
-# Install with: pip install sentence-transformers numpy
-# sentence-transformers==2.2.2
-# numpy==1.24.3
+# Vector database and knowledge graph dependencies
+chromadb==0.4.24
+sentence-transformers==2.2.2
+numpy==1.24.3
+networkx==3.2.1
+
+# Supabase integration for logging and database
+supabase==2.7.4
+postgrest==0.16.8
+realtime==1.0.6
