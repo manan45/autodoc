@@ -57,6 +57,9 @@ cover/
 *.mo
 *.pot
 
+vector_db/
+
+tail.txt
 # Django stuff:
 *.log
 local_settings.py

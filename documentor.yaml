@@ -62,6 +62,12 @@ analysis:
     detect_frameworks: true
     analyze_pipelines: true
     generate_flow_diagrams: true
+  
+  # File filtering settings
+  file_filtering:
+    skip_empty_files: true
+    min_file_size_bytes: 1
+    skip_whitespace_only_files: true
     
     frameworks:
       - tensorflow
@@ -318,6 +324,33 @@ ai:
   # OpenAI Configuration for AI-powered diagram generation
   openai_api_key: null  # Set via environment variable OPENAI_API_KEY or .env file
   model: "gpt-4"
+
+# LLM Configuration for AI Service
+llm:
+  # Enable LLM-powered analysis features
+  enabled: true
+  
+  # OpenAI API configuration (will use OPENAI_API_KEY environment variable)
+  openai_api_key: null  # Set via environment variable OPENAI_API_KEY
+  
+  # Model settings
+  default_model: "gpt-3.5-turbo"  # Options: gpt-3.5-turbo, gpt-4, gpt-4-turbo-preview
+  model: "gpt-3.5-turbo"  # Model for LLMAnalyzer
+  
+  # Rate limiting (to manage costs and API limits)
+  max_requests_per_minute: 60
+  max_tokens_per_request: 4000
+  max_files: 5  # Maximum files to analyze per run
+  delay_between_files: 1.0  # Seconds to wait between file analyses
+  
+  # Analysis settings
+  temperature: 0.3  # Lower = more consistent, Higher = more creative
+  timeout: 30  # Request timeout in seconds
+  max_chars_per_file: 8000  # Maximum characters per file to send to LLM
+  
+  # Retry settings
+  max_retries: 3
+  retry_base_delay: 1.0
   
   # Diagram Generation Settings
   diagram_generation:
@@ -332,3 +365,50 @@ ai:
     module_interactions: true
     data_flow_architecture: true
     component_communication: true
+
+# Supabase Integration
+supabase:
+  # Supabase Configuration for logging and database
+  url: "https://cwhvaojtdpqczdqzxtpb.supabase.co"  # Supabase project URL
+  key: null  # Set via environment variable SUPABASE_ANON_KEY or .env file
+  
+  # Database connection details
+  database:
+    host: "db.cwhvaojtdpqczdqzxtpb.supabase.co"
+    port: 5432
+    name: "autodoc"
+    user: "autodoc@1234"
+  
+  # Logging Settings
+  logging:
+    enabled: true
+    log_analysis_steps: true
+    log_llm_interactions: true
+    log_quality_assessments: true
+    log_vector_embeddings: true
+  
+  # Debug Interface Settings
+  debug:
+    enabled: true
+    show_database_stats: true
+    show_recent_interactions: true
+    show_session_info: true
+
+# Vector Embeddings Configuration
+embeddings:
+  # Embedding provider: 'sentence_transformers', 'openai', or 'simple'
+  provider: "sentence_transformers"
+  
+  # Model configuration
+  model_name: "all-MiniLM-L6-v2"  # For sentence_transformers
+  dimension: 384  # Will be auto-detected for most models
+  
+  # Generation settings
+  enabled: true
+  embed_modules: true
+  embed_functions: true
+  embed_classes: true
+  
+  # Search settings
+  similarity_threshold: 0.7
+  max_search_results: 10

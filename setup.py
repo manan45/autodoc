@@ -66,7 +66,6 @@ setup(
         "console_scripts": [
             "auto-doc-gen=auto_doc_generator.main:main",
             "autodoc=auto_doc_generator.main:main",
-            "autodoc-remote=auto_doc_generator.remote_editor:cli_remote_edit",
         ],
     },
     include_package_data=True,
